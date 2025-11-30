@@ -35,7 +35,7 @@ SHEET_ID = os.getenv("SHEET_ID", "")
 TELEGRAM_BOT_TOKEN = os.getenv("TELEGRAM_BOT_TOKEN", "")
 TELEGRAM_CHAT_ID = os.getenv("TELEGRAM_CHAT_ID", "")
 
-# Поддержка Google Credentials из переменной окружения (для Vercel) или файла
+# Поддержка Google Credentials из переменной окружения (для Vercel/.env) или файла
 GOOGLE_CREDENTIALS_JSON = os.getenv("GOOGLE_CREDENTIALS", "")
 CREDENTIALS_PATH = Path(__file__).parent.parent / "credentials.json"
 
@@ -232,16 +232,20 @@ def get_google_sheets_client():
     try:
         import json as json_lib
         if GOOGLE_CREDENTIALS_JSON:
-            creds_data = json_lib.loads(GOOGLE_CREDENTIALS_JSON)
-            service_account_email = creds_data.get('client_email', 'неизвестен')
-            logger.info(f"Используется Service Account из переменной окружения: {service_account_email}")
+            try:
+                creds_data = json_lib.loads(GOOGLE_CREDENTIALS_JSON)
+                service_account_email = creds_data.get('client_email', 'неизвестен')
+                logger.info(f"Используется Service Account из переменной окружения GOOGLE_CREDENTIALS: {service_account_email}")
+            except json_lib.JSONDecodeError as e:
+                logger.error(f"Ошибка парсинга GOOGLE_CREDENTIALS из .env: {e}")
+                raise ValueError("GOOGLE_CREDENTIALS содержит невалидный JSON")
         elif CREDENTIALS_PATH.exists():
             with open(CREDENTIALS_PATH, 'r', encoding='utf-8') as f:
                 creds_data = json_lib.load(f)
                 service_account_email = creds_data.get('client_email', 'неизвестен')
-            logger.info(f"Используется Service Account из файла: {service_account_email}")
+            logger.info(f"Используется Service Account из файла {CREDENTIALS_PATH}: {service_account_email}")
         else:
-            logger.warning("Не удалось определить Service Account email")
+            logger.warning(f"Не удалось найти credentials: файл {CREDENTIALS_PATH} не существует и GOOGLE_CREDENTIALS не установлен")
     except Exception as e:
         logger.warning(f"Не удалось прочитать email Service Account: {e}")
     
@@ -252,27 +256,37 @@ def get_google_sheets_client():
             "https://www.googleapis.com/auth/drive"
         ]
         
-        # Загружаем credentials из переменной окружения (для Vercel) или файла
+        # Загружаем credentials из переменной окружения (.env/Vercel) или файла
+        # Приоритет: GOOGLE_CREDENTIALS из .env > credentials.json файл
         if GOOGLE_CREDENTIALS_JSON:
             import json as json_lib
             try:
                 creds_data = json_lib.loads(GOOGLE_CREDENTIALS_JSON)
                 creds = Credentials.from_service_account_info(creds_data, scopes=scope)
-                logger.info("Используются credentials из переменной окружения GOOGLE_CREDENTIALS")
+                logger.info("✅ Используются credentials из переменной окружения GOOGLE_CREDENTIALS (.env)")
             except json_lib.JSONDecodeError as e:
-                logger.error(f"Ошибка парсинга GOOGLE_CREDENTIALS: {e}")
-                raise ValueError("GOOGLE_CREDENTIALS содержит невалидный JSON")
+                logger.error(f"❌ Ошибка парсинга GOOGLE_CREDENTIALS из .env: {e}")
+                raise ValueError(
+                    "GOOGLE_CREDENTIALS содержит невалидный JSON. "
+                    "Убедитесь, что JSON в одну строку без переносов. "
+                    "Можно использовать онлайн-инструмент для минификации JSON."
+                )
         elif CREDENTIALS_PATH.exists():
             creds = Credentials.from_service_account_file(
                 str(CREDENTIALS_PATH),
                 scopes=scope
             )
-            logger.info(f"Используются credentials из файла: {CREDENTIALS_PATH}")
+            logger.info(f"✅ Используются credentials из файла: {CREDENTIALS_PATH}")
         else:
-            raise FileNotFoundError(
-                f"Файл credentials.json не найден по пути: {CREDENTIALS_PATH} "
-                "и переменная окружения GOOGLE_CREDENTIALS не установлена"
+            error_msg = (
+                f"❌ Не найдены credentials для Google Sheets.\n"
+                f"   Файл credentials.json не найден по пути: {CREDENTIALS_PATH}\n"
+                f"   И переменная окружения GOOGLE_CREDENTIALS не установлена.\n"
+                f"   Решение: Добавьте GOOGLE_CREDENTIALS в .env файл (весь JSON в одну строку) "
+                f"или разместите credentials.json в корне проекта."
             )
+            logger.error(error_msg)
+            raise FileNotFoundError(error_msg)
         
         # Создаем клиент
         client = gspread.authorize(creds)
