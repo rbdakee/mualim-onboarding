@@ -29,25 +29,38 @@ pip install -r requirements.txt
 
 ### 3. Настройка переменных окружения
 
-Создайте файл `.env` в корне проекта:
+#### Для локальной разработки:
+
+Создайте файл `.env.local` в корне проекта (скопируйте из `.env.example`):
+
+```env
+# Digital Ocean API URL
+# Для локальной разработки используйте: http://localhost:5000
+# Для production на Vercel: https://your-app-name.ondigitalocean.app
+DIGITAL_OCEAN_API_URL=http://localhost:5000
+```
+
+#### Для Digital Ocean API (в папке digitalocean-api):
+
+Создайте файл `.env` в папке `digitalocean-api/`:
 
 ```env
 # Hugging Face Inference API Configuration
-# Получите API ключ на https://huggingface.co/settings/tokens
-# Создайте endpoint на https://huggingface.co/inference-endpoints
 HF_API_KEY=your_huggingface_api_token_here
 HF_ENDPOINT_URL=https://your-endpoint-id.region.inference.huggingface.cloud
 
 # Google Sheets Configuration
-# Получите Sheet ID из URL вашей Google таблицы
-# Например, из URL: https://docs.google.com/spreadsheets/d/SHEET_ID/edit
 SHEET_ID=your_google_sheet_id_here
 
 # Telegram Bot Configuration (опционально)
-# Создайте бота через @BotFather в Telegram и получите токен
 TELEGRAM_BOT_TOKEN=your_telegram_bot_token_here
-# Получите chat_id, отправив сообщение боту @userinfobot
 TELEGRAM_CHAT_ID=your_telegram_chat_id_here
+
+# Google Credentials (JSON в одну строку)
+GOOGLE_CREDENTIALS={"type":"service_account",...}
+```
+
+**Примечание:** См. `VERCEL_DIGITALOCEAN_SETUP.md` для полной инструкции по настройке Vercel и Digital Ocean.
 ```
 
 ### 4. Настройка Google Sheets
