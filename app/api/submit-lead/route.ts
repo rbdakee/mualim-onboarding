@@ -30,6 +30,7 @@ function getBackendBaseUrl(requestUrl: string): string {
 
 function getApiToken(): string {
   return (
+    process.env.SECRET_TOKEN_API ||
     (process.env['X-API-TOKEN'] as string | undefined) ||
     process.env.X_API_TOKEN ||
     process.env.API_TOKEN ||

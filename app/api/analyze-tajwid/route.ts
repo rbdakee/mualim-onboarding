@@ -30,6 +30,7 @@ function getApiToken(): string {
   // Важно: env-ключ с дефисом (`X-API-TOKEN`) иногда не подхватывается некоторыми окружениями.
   // Поэтому читаем несколько вариантов.
   return (
+    process.env.SECRET_TOKEN_API ||
     (process.env['X-API-TOKEN'] as string | undefined) ||
     process.env.X_API_TOKEN ||
     process.env.API_TOKEN ||
