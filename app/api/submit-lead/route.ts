@@ -3,8 +3,39 @@ import { writeFile, mkdir } from 'fs/promises'
 import { join } from 'path'
 import { existsSync } from 'fs'
 
-// URL API на Digital Ocean
-const DIGITAL_OCEAN_API_URL = process.env.DIGITAL_OCEAN_API_URL || 'http://localhost:5000'
+// Backend URL собираем из .env: IP + PORT.
+// Важно: в Next.js `process.env.PORT` часто относится к порту самого Next (обычно 3000),
+// поэтому добавляем защиту от рекурсии (когда /api/submit-lead вызывает сам себя).
+function getBackendBaseUrl(requestUrl: string): string {
+  const ipRaw = (process.env.IP || process.env.BACKEND_IP || 'localhost').trim()
+  const backendPortRaw = (process.env.BACKEND_PORT || process.env.API_PORT || '').trim()
+  const portRaw = (backendPortRaw || process.env.PORT || '5000').trim()
+
+  const withProto = /^https?:\/\//i.test(ipRaw) ? ipRaw : `http://${ipRaw}`
+  const url = new URL(withProto)
+  if (!url.port && portRaw) url.port = portRaw
+
+  // Защита от рекурсии: если цель совпала с портом текущего Next-запроса,
+  // значит мы случайно целимся в сам Next, а не в бэкенд.
+  // В этом случае берём дефолтный порт бэкенда 5000 (если BACKEND_PORT не задан).
+  const req = new URL(requestUrl)
+  const reqPort = req.port || (req.protocol === 'https:' ? '443' : '80')
+  const chosenPort = url.port || (url.protocol === 'https:' ? '443' : '80')
+  if (!backendPortRaw && chosenPort === reqPort) {
+    url.port = '5000'
+  }
+
+  return url.origin
+}
+
+function getApiToken(): string {
+  return (
+    (process.env['X-API-TOKEN'] as string | undefined) ||
+    process.env.X_API_TOKEN ||
+    process.env.API_TOKEN ||
+    ''
+  ).trim()
+}
 
 // Маппинг кодов ответов на текстовые значения
 const ANSWER_LABELS: Record<string, string> = {
@@ -114,19 +145,23 @@ export async function POST(request: NextRequest) {
       } : null,
     }
 
-    // Отправляем запрос на Digital Ocean API
+    // Отправляем запрос на Backend API
     try {
-      const response = await fetch(`${DIGITAL_OCEAN_API_URL}/api/submit-lead`, {
+      const baseUrl = getBackendBaseUrl(request.url)
+      const token = getApiToken()
+
+      const response = await fetch(`${baseUrl}/api/submit-lead`, {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
+          ...(token ? { 'X-API-TOKEN': token } : {}),
         },
         body: JSON.stringify(submissionData),
       })
 
       if (!response.ok) {
         const errorData = await response.json().catch(() => ({ detail: 'Ошибка при сохранении в Google Sheets' }))
-        console.error('Digital Ocean API error:', errorData)
+        console.error('Backend API error:', errorData)
         
         // Сохраняем локально как резервный вариант
         try {
@@ -151,11 +186,11 @@ export async function POST(request: NextRequest) {
       }
 
       const result = await response.json()
-      console.log('Digital Ocean API success:', result)
+      console.log('Backend API success:', result)
       return NextResponse.json(result)
 
     } catch (fetchError) {
-      console.error('Ошибка при отправке запроса на Digital Ocean API:', fetchError)
+      console.error('Ошибка при отправке запроса на Backend API:', fetchError)
       
       // Сохраняем локально как резервный вариант
       try {
