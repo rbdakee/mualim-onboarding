@@ -28,6 +28,11 @@ type Screen = {
     | "level-assessment"
     | "methodology"
     | "testimonials"
+    | "teachers"
+    | "why-important"
+    | "what-we-gain"
+    | "why-not-learned"
+    | "mualim-approach"
     | "stats"
     | "lead"
     | "result"
@@ -234,7 +239,12 @@ const screens: Screen[] = [
   { type: "level-assessment" },
   { type: "methodology" },
   { type: "testimonials" },
+  { type: "teachers" },
+  { type: "why-important" },
+  { type: "what-we-gain" },
   { type: "stats" },
+  { type: "why-not-learned" },
+  { type: "mualim-approach" },
   { type: "lead" },
   { type: "result" },
   { type: "payment" }, // Added payment screen to flow
@@ -445,18 +455,19 @@ export default function OnboardingPage() {
     if (feedback) {
       setSelectedFeedback(feedback)
       setCurrentQuote(quote || "")
-
-      setTimeout(() => {
-        if (currentScreen < screens.length - 1) {
-          setCurrentScreen(currentScreen + 1)
-          setSelectedFeedback("")
-          setCurrentQuote("")
-        }
-      }, 3000)
+      // Убрали setTimeout - теперь пользователь сам нажимает "Далее"
     } else {
       if (currentScreen < screens.length - 1) {
         setCurrentScreen(currentScreen + 1)
       }
+    }
+  }
+
+  const handleFeedbackNext = () => {
+    if (currentScreen < screens.length - 1) {
+      setCurrentScreen(currentScreen + 1)
+      setSelectedFeedback("")
+      setCurrentQuote("")
     }
   }
 
@@ -665,7 +676,11 @@ export default function OnboardingPage() {
         </div>
 
         {/* Back Button */}
-        {currentScreen > 0 && screen.type !== "result" && screen.type !== "payment" && !selectedFeedback && (
+        {currentScreen > 0 && 
+          screen.type !== "result" && 
+          screen.type !== "payment" && 
+          !selectedFeedback && 
+          screen.type !== "question" && (
           <button
             onClick={handleBack}
             className="fixed top-4 left-1/2 -translate-x-1/2 max-w-md w-[calc(100%-2rem)] z-40"
@@ -1395,6 +1410,13 @@ export default function OnboardingPage() {
                     <p className="text-sm leading-relaxed italic whitespace-pre-line">{currentQuote}</p>
                   </div>
                 )}
+                <Button
+                  onClick={handleFeedbackNext}
+                  className="mt-6 bg-white text-emerald-600 hover:bg-white/90 font-semibold w-full"
+                  size="lg"
+                >
+                  Далее
+                </Button>
               </div>
             </div>
           )}
@@ -1523,6 +1545,249 @@ export default function OnboardingPage() {
                     )}
                   />
                 ))}
+              </div>
+            </div>
+          )}
+
+          {screen.type === "teachers" && (
+            <div className="flex flex-col min-h-[calc(100vh-12rem)]">
+              <div className="text-7xl text-center mb-4 animate-in zoom-in duration-500">👨‍🏫</div>
+              <h1 className="text-3xl font-bold mb-3 text-white text-center">Наши устазы</h1>
+
+              <div className="space-y-6 mb-8">
+                {/* Profile Images */}
+                <div className="flex flex-col items-center gap-4 mb-6">
+                  <div className="w-20 h-20 rounded-full bg-emerald-600/20 flex items-center justify-center text-4xl border-2 border-emerald-600/30">
+                    👩‍🦳
+                  </div>
+                  <div className="w-20 h-20 rounded-full bg-emerald-600/20 flex items-center justify-center text-4xl border-2 border-emerald-600/30">
+                    👨
+                  </div>
+                  <div className="w-20 h-20 rounded-full bg-emerald-600/20 flex items-center justify-center text-4xl border-2 border-emerald-600/30">
+                    👨
+                  </div>
+                </div>
+
+                {/* Qualifications */}
+                <div className="space-y-4">
+                  <div className="bg-emerald-600/10 rounded-2xl p-4 border border-emerald-600/20">
+                    <div className="flex items-start gap-3">
+                      <div className="text-2xl">📖</div>
+                      <div>
+                        <div className="font-semibold text-white mb-1">Хафизы Корана</div>
+                        <div className="text-sm text-white/70">Полностью выучили Священный Коран наизусть</div>
+                      </div>
+                    </div>
+                  </div>
+
+                  <div className="bg-emerald-600/10 rounded-2xl p-4 border border-emerald-600/20">
+                    <div className="flex items-start gap-3">
+                      <div className="text-2xl">🎓</div>
+                      <div>
+                        <div className="font-semibold text-white mb-1">Обучались в NMU</div>
+                        <div className="text-sm text-white/70">Профессиональное образование в исламских науках</div>
+                      </div>
+                    </div>
+                  </div>
+
+                  <div className="bg-emerald-600/10 rounded-2xl p-4 border border-emerald-600/20">
+                    <div className="flex items-start gap-3">
+                      <div className="text-2xl">⏱️</div>
+                      <div>
+                        <div className="font-semibold text-white mb-1">3 года опыта преподавания</div>
+                        <div className="text-sm text-white/70">Арабского языка и таджвида</div>
+                      </div>
+                    </div>
+                  </div>
+                </div>
+              </div>
+            </div>
+          )}
+
+          {screen.type === "why-important" && (
+            <div className="flex flex-col min-h-[calc(100vh-12rem)]">
+              <div className="text-7xl text-center mb-4 animate-in zoom-in duration-500">📿</div>
+              <h1 className="text-3xl font-bold mb-3 text-white text-center">Почему важно читать Коран с правильным произношением?</h1>
+
+              <div className="space-y-6 mb-8">
+                <div className="bg-emerald-600/20 rounded-3xl p-6 border border-emerald-600/30">
+                  <p className="text-white/90 leading-relaxed mb-4 text-center">
+                    "И читай Коран размеренным чтением (с тарти́лем) [не спеша, четко проговаривая буквы, слова]."
+                  </p>
+                  <p className="text-white/70 text-sm text-center italic">
+                    — Сура Аль-Муззаммиль (73:4)
+                  </p>
+                </div>
+
+                <div className="bg-blue-600/20 rounded-3xl p-6 border border-blue-600/30">
+                  <p className="text-white/90 leading-relaxed text-center">
+                    «Тот, кто читает Коран красиво, плавно и точно, будет в компании благородных и праведных ангелов.
+                  </p>
+                  <p className="text-white/90 leading-relaxed text-center mt-3">
+                    А тот, кто читает его с трудом, заикаясь или сбиваясь, получит двойное вознаграждение»
+                  </p>
+                  <p className="text-white/70 text-sm text-center italic mt-4">
+                    (Сахих Муслим)
+                  </p>
+                </div>
+              </div>
+            </div>
+          )}
+
+          {screen.type === "what-we-gain" && (
+            <div className="flex flex-col min-h-[calc(100vh-12rem)]">
+              <div className="text-7xl text-center mb-4 animate-in zoom-in duration-500">✨</div>
+              <h1 className="text-3xl font-bold mb-3 text-white text-center">Что мы приобретаем изучая таджвид?</h1>
+
+              <div className="space-y-4 mb-8">
+                <div className="bg-emerald-600/10 rounded-2xl p-4 border border-emerald-600/20">
+                  <div className="flex items-start gap-3">
+                    <div className="text-2xl">📚</div>
+                    <div>
+                      <div className="font-semibold text-white mb-1">Больше желания углубиться в изучении религии</div>
+                      <div className="text-sm text-white/70">В отличие от чтения на кириллице</div>
+                    </div>
+                  </div>
+                </div>
+
+                <div className="bg-emerald-600/10 rounded-2xl p-4 border border-emerald-600/20">
+                  <div className="flex items-start gap-3">
+                    <div className="text-2xl">🕌</div>
+                    <div>
+                      <div className="font-semibold text-white mb-1">Повысится уверенность в правильности чтения в намазе</div>
+                    </div>
+                  </div>
+                </div>
+
+                <div className="bg-emerald-600/10 rounded-2xl p-4 border border-emerald-600/20">
+                  <div className="flex items-start gap-3">
+                    <div className="text-2xl">🌍</div>
+                    <div>
+                      <div className="font-semibold text-white mb-1">Первый шаг на пути к изучению арабского языка</div>
+                      <div className="text-sm text-white/70">И пониманию слов Аллаха</div>
+                    </div>
+                  </div>
+                </div>
+
+                <div className="bg-emerald-600/10 rounded-2xl p-4 border border-emerald-600/20">
+                  <div className="flex items-start gap-3">
+                    <div className="text-2xl">💎</div>
+                    <div>
+                      <div className="font-semibold text-white mb-1">Инвестиция в нашу ахиру</div>
+                      <div className="text-sm text-white/70">Вечное вознаграждение за правильное чтение</div>
+                    </div>
+                  </div>
+                </div>
+              </div>
+            </div>
+          )}
+
+          {screen.type === "why-not-learned" && (
+            <div className="flex flex-col min-h-[calc(100vh-12rem)]">
+              <div className="text-7xl text-center mb-4 animate-in zoom-in duration-500">🤔</div>
+              <h1 className="text-3xl font-bold mb-3 text-white text-center">Но зная всю важность чтения, почему мы все еще не выучили таджвид?</h1>
+
+              <div className="space-y-3 mb-8">
+                <div className="bg-red-600/10 rounded-2xl p-4 border border-red-600/20">
+                  <div className="flex items-start gap-3">
+                    <div className="text-xl">⏰</div>
+                    <p className="text-white/90 leading-relaxed">Нету времени на самостоятельное изучение (откладывание на потом)</p>
+                  </div>
+                </div>
+
+                <div className="bg-red-600/10 rounded-2xl p-4 border border-red-600/20">
+                  <div className="flex items-start gap-3">
+                    <div className="text-xl">😰</div>
+                    <p className="text-white/90 leading-relaxed">Отсутствие уверенности в своих знаниях</p>
+                  </div>
+                </div>
+
+                <div className="bg-red-600/10 rounded-2xl p-4 border border-red-600/20">
+                  <div className="flex items-start gap-3">
+                    <div className="text-xl">👨‍🏫</div>
+                    <p className="text-white/90 leading-relaxed">Отсутствие устаза для проверки знаний</p>
+                  </div>
+                </div>
+
+                <div className="bg-red-600/10 rounded-2xl p-4 border border-red-600/20">
+                  <div className="flex items-start gap-3">
+                    <div className="text-xl">📖</div>
+                    <p className="text-white/90 leading-relaxed">Неэффективные методы обучения</p>
+                  </div>
+                </div>
+
+                <div className="bg-red-600/10 rounded-2xl p-4 border border-red-600/20">
+                  <div className="flex items-start gap-3">
+                    <div className="text-xl">💰</div>
+                    <p className="text-white/90 leading-relaxed">Бесплатное не ценится</p>
+                  </div>
+                </div>
+
+                <div className="bg-red-600/10 rounded-2xl p-4 border border-red-600/20">
+                  <div className="flex items-start gap-3">
+                    <div className="text-xl">👥</div>
+                    <p className="text-white/90 leading-relaxed">Обычно в группе много людей, поэтому устаз не успевает уделять внимание каждому</p>
+                  </div>
+                </div>
+              </div>
+            </div>
+          )}
+
+          {screen.type === "mualim-approach" && (
+            <div className="flex flex-col min-h-[calc(100vh-12rem)]">
+              <div className="text-7xl text-center mb-4 animate-in zoom-in duration-500">🎯</div>
+              <h1 className="text-3xl font-bold mb-3 text-white text-center">В Mualim, мы делаем акцент на индивидуальном подходе к каждому студенту</h1>
+
+              <div className="space-y-4 mb-8">
+                <div className="bg-emerald-600/10 rounded-2xl p-4 border border-emerald-600/20">
+                  <div className="flex items-start gap-3">
+                    <div className="text-2xl font-bold text-emerald-400">1</div>
+                    <div>
+                      <div className="font-semibold text-white mb-1">Индивидуальные занятия или группы до 3 человек</div>
+                      <div className="text-sm text-white/70">Персональный подход каждому</div>
+                    </div>
+                  </div>
+                </div>
+
+                <div className="bg-emerald-600/10 rounded-2xl p-4 border border-emerald-600/20">
+                  <div className="flex items-start gap-3">
+                    <div className="text-2xl font-bold text-emerald-400">2</div>
+                    <div>
+                      <div className="font-semibold text-white mb-1">Возможность комфортного онлайн-обучения из дома</div>
+                      <div className="text-sm text-white/70">В удобное для вас время</div>
+                    </div>
+                  </div>
+                </div>
+
+                <div className="bg-emerald-600/10 rounded-2xl p-4 border border-emerald-600/20">
+                  <div className="flex items-start gap-3">
+                    <div className="text-2xl font-bold text-emerald-400">3</div>
+                    <div>
+                      <div className="font-semibold text-white mb-1">Все устазы с опытом преподавания</div>
+                      <div className="text-sm text-white/70">В таджвиде и арабском языке</div>
+                    </div>
+                  </div>
+                </div>
+
+                <div className="bg-emerald-600/10 rounded-2xl p-4 border border-emerald-600/20">
+                  <div className="flex items-start gap-3">
+                    <div className="text-2xl font-bold text-emerald-400">4</div>
+                    <div>
+                      <div className="font-semibold text-white mb-1">Ваш вклад в обучение поддерживает устазов</div>
+                      <div className="text-sm text-white/70">И помогает другим людям изучать Коран</div>
+                    </div>
+                  </div>
+                </div>
+
+                <div className="bg-emerald-600/10 rounded-2xl p-4 border border-emerald-600/20">
+                  <div className="flex items-start gap-3">
+                    <div className="text-2xl font-bold text-emerald-400">5</div>
+                    <div>
+                      <div className="font-semibold text-white mb-1">ИИ устаз 24/7 доступом</div>
+                      <div className="text-sm text-white/70">Чтобы практиковаться таджвиду в любое время</div>
+                    </div>
+                  </div>
+                </div>
               </div>
             </div>
           )}
@@ -1751,7 +2016,12 @@ export default function OnboardingPage() {
                 {screen.type === "hero" && "Продолжить"}
                 {screen.type === "methodology" && "Далее"}
                 {screen.type === "testimonials" && "Далее"}
+                {screen.type === "teachers" && "Далее"}
+                {screen.type === "why-important" && "Далее"}
+                {screen.type === "what-we-gain" && "Далее"}
                 {screen.type === "stats" && "Далее"}
+                {screen.type === "why-not-learned" && "Далее"}
+                {screen.type === "mualim-approach" && "Далее"}
                 {screen.type === "lead" && "🎁 Получить персональный план"}
               </Button>
             </div>
